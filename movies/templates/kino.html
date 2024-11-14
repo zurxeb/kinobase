@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Kino{% endblock %}
+
+{% block content %}
+
+ {% if request.user.is_authenticated %}
+<h2 class="text-center my-4">Kino</h2>
+
+<div class="container my-3">
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-6 g-3">
+        {% for movie in movies %}
+            {% if movie.category == 'kino' %}
+                <div class="col p-1">
+                    <a href="{% url 'movies:movie_detail' movie.pk %}" style="text-decoration: none; color: inherit;">
+                        <div class="card h-70">
+                            <img src="{{ movie.poster.url }}"
+                                 class="card-img-top"
+                                 alt="{{ movie.title }}"
+                                 style="width: 100%; height: 300px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">{{ movie.title }}</h5>
+                                <div class="d-flex justify-content-center my-1">
+                                    {% for i in "12345" %}
+                                        <span>⭐</span>
+                                    {% endfor %}
+                                </div>
+                                <p class="card-text text-center mb-1">{{ movie.year }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endif %}
+        {% endfor %}
+       {% else %}
+    <div class="text-center my-5">
+        <h1>Bu menyuni ko'rish uchun avval <a href="{% url 'users:login' %}?next={% url 'movies:kino' %}">login</a> qiling.</h1>
+    </div>
+         {% endif %}
+    </div>
+</div>
+{% endblock %}

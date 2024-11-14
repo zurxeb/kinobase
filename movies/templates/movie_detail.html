@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}{{ movie.title }}{% endblock %}
+
+{% block content %}
+{% if request.user.is_authenticated %}
+
+<div class="row">
+    <div class="col-2">
+        <div class="movie-detail">
+            <img style="width: 210px; height: 300px;" src="{{ movie.poster.url }}" alt="{{ movie.title }}">
+            <!-- Star Rating Display -->
+            <div class="rating mt-2 text-center">
+                {% for i in "12345" %}
+                    {% if movie.rating|floatformat:1 >= i %}
+                        <span class="fa fa-star checked" style="color: gold;"></span>
+                    {% else %}
+                        <span class="fa fa-star"></span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-7">
+        <h1>{{ movie.title }}</h1>
+        <p><strong>Yili:</strong> {{ movie.year }}</p>
+        <p><strong>Davlati:</strong> {{ movie.country }}</p>
+        <p><strong>Janr:</strong> {{ movie.genre }}</p>
+        <p><strong>Rejissor:</strong> {{ movie.director }}</p>
+        <p><strong>Aktyorlar:</strong> {{ movie.actors }}</p>
+        <p><strong>Reyting:</strong> {{ movie.rating }}</p>
+        <p><strong>Davomiyligi:</strong> {{ movie.duration }}</p>
+        <p><strong>Yosh chegarasi:</strong> {{ movie.age_limit }}</p>
+        <p><strong>Tavsif:</strong> {{ movie.description }}</p>
+        <a href="{{ movie.trailer_link }}" target="_blank">Trailer</a>
+
+ {% if request.user.is_authenticated %}
+    <div class="like-dislike mt-3">
+        <form method="post" action="{% url 'movies:like_dislike' movie.pk %}">
+            {% csrf_token %}
+            {% if not movie.likes_count == 0 and movie.dislikes_count == 0 %}
+                <button type="submit" name="action" value="like" class="btn btn-success" {% if movie.likes_count %} disabled {% endif %}>
+                    👍  (<span>{{ movie.likes_count }}</span>)
+                </button>
+                <button type="submit" name="action" value="dislike" class="btn btn-danger ms-2" {% if movie.dislikes_count %} disabled {% endif %}>
+                    👎  (<span>{{ movie.dislikes_count }}</span>)
+                </button>
+
+            {% endif %}
+        </form>
+    </div>
+{% endif %}
+
+
+    </div>
+</div>
+
+{% if movie.video_link %}
+    <div style="margin-top: 20px;">
+        <iframe width="640" height="360" src="{{ movie.video_link }}" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+    </div>
+{% elif movie.video_file %}
+    <video controls width="640" height="360">
+        <source src="{{ movie.video_file.url }}" type="video/mp4">
+        Sizning brauzeringiz videoni qo‘llab-quvvatlamaydi.
+    </video>
+{% else %}
+    <p>Video mavjud emas.</p>
+{% endif %}
+
+<h2 class="mt-4">Izohlar</h2>
+{% for review in reviews %}
+  <div class="row mb-3">
+      <div class="col-3">
+        <strong>{{ review.user_name }}</strong>
+        (Rating: {{ review.rating }})
+        <p>{{ review.comment }}</p>
+        <p><small>{{ review.created_at }}</small></p>
+    </div>
+{% empty %}
+    <p>Bu filmga hali hech kim izoh qoldirmagan.</p>
+{% endfor %}
+
+<div class="row mb-3">
+    <div class="col-3">
+        <h3 class="mt-4">Yangi izoh qo'shish</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ review_form|crispy }}
+            <button type="submit" class="btn btn-primary mt-2">Qo'shish</button>
+        </form>
+    </div>
+</div>
+
+{% else %}
+<div class="text-center my-5">
+    <h1>Anime, Kino, Serial, Multfimlar ko'rish uchun avval <a href="{% url 'users:login' %}?next={% url 'movies:kino' %}">login</a> qiling.</h1>
+</div>
+{% endif %}
+{% endblock %}
